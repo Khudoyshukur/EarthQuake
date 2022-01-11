@@ -34,9 +34,11 @@ class EarthQuakeListAdapter : ListAdapter<EarthQuake, EarthQuakeListAdapter.View
     inner class ViewHolder(private val binding: ItemEarthquakeBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bindData(earthQuake: EarthQuake) {
-            binding.date.text = TIME_FORMAT.format(earthQuake.mDate)
-            binding.details.text = earthQuake.toString()
-            binding.magnitude.text = MAGNITUDE_FORMAT.format(earthQuake.mMagnitude)
+            binding.timeFormat = TIME_FORMAT
+            binding.magnitudeFormat = MAGNITUDE_FORMAT
+            binding.earthquake = earthQuake
+
+            binding.executePendingBindings()
         }
     }
 
