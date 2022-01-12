@@ -9,3 +9,4 @@ dependencyResolutionManagement {
 rootProject.name = "EarthQuakeApplication"
 include ':app'
 include ':customviews'
+include ':starsign'
