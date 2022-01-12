@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.earthquakeapplication.databinding.ActivityMainBinding
 import com.example.earthquakeapplication.fragments.EarthquakeListFragment
 import com.example.earthquakeapplication.model.EarthQuake
+import java.io.File
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
@@ -27,18 +28,6 @@ class MainActivity : AppCompatActivity() {
             listFragment =
                 supportFragmentManager.findFragmentByTag(TAG_LIST_FRAGMENT) as EarthquakeListFragment
         }
-    }
-
-    override fun onResumeFragments() {
-        super.onResumeFragments()
-
-        val now = Calendar.getInstance().time
-        val earthquakes = arrayListOf(
-            EarthQuake("0", now, "San Jose", null, 7.3, null),
-            EarthQuake("1", now, "Laa", null, 6.5, null),
-        )
-
-        listFragment.setEarthquakes(earthquakes)
     }
 
     companion object {

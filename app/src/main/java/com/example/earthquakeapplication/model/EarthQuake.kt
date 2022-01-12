@@ -12,12 +12,12 @@ import java.util.*
  */
 
 data class EarthQuake(
-    val mId: String,
-    val mDate: Date,
-    val mDetails: String,
-    val mLocation: Location?,
-    val mMagnitude: Double,
-    val mLink: String?
+    val mId: String = "",
+    val mDate: Date = Calendar.getInstance().time,
+    val mDetails: String = "",
+    val mLocation: Location? = null,
+    val mMagnitude: Double = -1.0,
+    val mLink: String? = ""
 ) {
     override fun toString(): String {
         val simpleDateFormat = SimpleDateFormat("HH.mm", Locale.US)
@@ -29,5 +29,15 @@ data class EarthQuake(
         other.mId == this.mId
     } else {
         false
+    }
+
+    override fun hashCode(): Int {
+        var result = mId.hashCode()
+        result = 31 * result + mDate.hashCode()
+        result = 31 * result + mDetails.hashCode()
+        result = 31 * result + (mLocation?.hashCode() ?: 0)
+        result = 31 * result + mMagnitude.hashCode()
+        result = 31 * result + (mLink?.hashCode() ?: 0)
+        return result
     }
 }

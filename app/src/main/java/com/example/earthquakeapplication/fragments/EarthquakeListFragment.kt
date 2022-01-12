@@ -2,9 +2,11 @@ package com.example.earthquakeapplication.fragments
 
 import android.os.Bundle
 import android.view.View
+import androidx.lifecycle.ViewModelProviders
 import com.example.earthquakeapplication.adapters.EarthQuakeListAdapter
 import com.example.earthquakeapplication.databinding.FragmentEarthquakeListBinding
-import com.example.earthquakeapplication.model.EarthQuake
+import com.example.earthquakeapplication.parser.XmlPullParser
+import com.example.earthquakeapplication.viewmodel.EarthQuakeListViewModel
 
 /**
  * Created by: androdev
@@ -13,24 +15,37 @@ import com.example.earthquakeapplication.model.EarthQuake
  * Email: Khudoyshukur.Juraev.001@mail.ru
  */
 
+@Suppress("Deprecation")
 class EarthquakeListFragment :
     BaseFragment<FragmentEarthquakeListBinding>(FragmentEarthquakeListBinding::inflate) {
 
     private var listAdapter: EarthQuakeListAdapter? = null
+    private lateinit var viewModel: EarthQuakeListViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        viewModel = ViewModelProviders.of(this)[EarthQuakeListViewModel::class.java]
+
         initUI()
+        subscribeToLiveData()
     }
 
     private fun initUI() {
         listAdapter = EarthQuakeListAdapter()
-        binding.root.adapter = listAdapter
+        binding.list.adapter = listAdapter
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            viewModel.loadEarthQuakes(XmlPullParser())
+        }
     }
 
-    fun setEarthquakes(earthquakes: List<EarthQuake>) {
-        listAdapter?.submitList(earthquakes)
+    private fun subscribeToLiveData() {
+        viewModel.earthQuakes.observe(viewLifecycleOwner) {
+            listAdapter?.submitList(it) {
+                binding.swipeRefreshLayout.isRefreshing = false
+            }
+        }
     }
 
     override fun onDestroyView() {
