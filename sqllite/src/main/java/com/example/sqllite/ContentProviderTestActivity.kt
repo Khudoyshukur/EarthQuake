@@ -1,7 +1,10 @@
 package com.example.sqllite
 
+import android.app.SearchManager
+import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
+import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.CursorLoader
@@ -27,13 +30,29 @@ class ContentProviderTestActivity : AppCompatActivity() {
         hoardsAdapter = HoardsAdapter()
         binding.recyclerView.adapter = hoardsAdapter
 
-        binding.btnLoad.setOnClickListener {
-            LoaderManager.getInstance(this).initLoader(LOADER_ID, null, MyContentLoader())
-        }
+        LoaderManager.getInstance(this).initLoader(LOADER_ID, null, MyContentSearchLoader())
     }
 
-    private inner class MyContentLoader() : LoaderManager.LoaderCallbacks<Cursor> {
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+
+        setIntent(intent)
+        LoaderManager.getInstance(this).restartLoader(LOADER_ID, null, MyContentSearchLoader())
+    }
+
+    private inner class MyContentSearchLoader : LoaderManager.LoaderCallbacks<Cursor> {
         override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
+            val extraName = intent?.getStringExtra(EXTRA_NAME)
+            if (!extraName.isNullOrBlank()) {
+                val selection = "${HoardContract.KEY_GOLD_HOARD_NAME_COLUMN}=?"
+                val selectionArgs = arrayOf(extraName)
+
+                return CursorLoader(
+                    this@ContentProviderTestActivity, MyHoardContentProvider.CONTENT_URI,
+                    null, selection, selectionArgs, null
+                )
+            }
+
             return CursorLoader(
                 this@ContentProviderTestActivity, MyHoardContentProvider.CONTENT_URI,
                 null, null, null, null
@@ -71,5 +90,6 @@ class ContentProviderTestActivity : AppCompatActivity() {
 
     companion object {
         private const val LOADER_ID = 123
+        private const val EXTRA_NAME = "extra_name"
     }
 }

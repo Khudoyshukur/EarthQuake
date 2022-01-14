@@ -11,23 +11,31 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EarthQuakeApplication">
         <activity
-            android:name=".ContentProviderTestActivity"
+            android:name=".SearchTestActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".ContentProviderTestActivity" />
+        </activity>
+        <activity
+            android:name=".ContentProviderTestActivity"
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/hoard_search" />
         </activity>
         <activity
             android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false" />
 
         <provider
             android:name=".provider.MyHoardContentProvider"
