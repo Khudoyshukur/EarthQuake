@@ -1,4 +1,4 @@
-package com.example.earthquakeapplication.adapters
+package com.example.earthquakeapplication.earthquake
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

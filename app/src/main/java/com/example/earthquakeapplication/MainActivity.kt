@@ -1,12 +1,13 @@
 package com.example.earthquakeapplication
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import com.example.earthquakeapplication.databinding.ActivityMainBinding
-import com.example.earthquakeapplication.fragments.EarthquakeListFragment
-import com.example.earthquakeapplication.model.EarthQuake
-import java.io.File
-import java.util.*
+import com.example.earthquakeapplication.earthquake.EarthquakeListFragment
+import com.example.earthquakeapplication.preference.PreferenceActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,7 +31,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menu?.add(0, MENU_PREFERENCES, Menu.NONE, R.string.menu_settings)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        super.onOptionsItemSelected(item)
+        return when (item.itemId) {
+            MENU_PREFERENCES -> {
+                val intent = Intent(this, PreferenceActivity::class.java)
+                startActivity(intent)
+                true
+            }
+            else -> false
+        }
+    }
+
     companion object {
         private const val TAG_LIST_FRAGMENT = "tag_list_fragment"
+        private const val MENU_PREFERENCES = Menu.FIRST + 1
     }
 }

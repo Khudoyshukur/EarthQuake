@@ -1,4 +1,4 @@
-package com.example.earthquakeapplication.viewmodel
+package com.example.earthquakeapplication.earthquake
 
 import android.annotation.SuppressLint
 import android.os.AsyncTask
