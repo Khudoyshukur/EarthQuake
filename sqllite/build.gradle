@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 29
 
     defaultConfig {
         applicationId "com.example.sqllite"
         minSdk 21
-        targetSdk 32
+        targetSdk 29
         versionCode 1
         versionName "1.0"
 
@@ -33,6 +33,8 @@ android {
     buildFeatures {
         viewBinding true
     }
+    compileSdkVersion 31
+    buildToolsVersion '30.0.2'
 }
 
 dependencies {
