@@ -10,3 +10,4 @@ rootProject.name = "EarthQuakeApplication"
 include ':app'
 include ':customviews'
 include ':starsign'
+include ':downloadmanager'
