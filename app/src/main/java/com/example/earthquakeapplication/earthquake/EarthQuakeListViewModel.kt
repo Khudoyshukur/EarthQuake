@@ -1,17 +1,19 @@
 package com.example.earthquakeapplication.earthquake
 
 import android.annotation.SuppressLint
+import android.app.Application
+import android.content.Context
 import android.os.AsyncTask
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.earthquakeapplication.database.Database
 import com.example.earthquakeapplication.model.EarthQuake
 import com.example.earthquakeapplication.parser.DOMParser
 import com.example.earthquakeapplication.parser.EarthquakeParser
 import com.example.earthquakeapplication.parser.StreamType
-import com.example.earthquakeapplication.parser.XmlPullParser
-import java.lang.Exception
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -22,9 +24,19 @@ import java.net.URL
  * Email: Khudoyshukur.Juraev.001@mail.ru
  */
 
-class EarthQuakeListViewModel : ViewModel() {
-    private val _earthQuakes = MutableLiveData<List<EarthQuake>>()
-    val earthQuakes: LiveData<List<EarthQuake>> get() = _earthQuakes
+class EarthQuakeListViewModel(
+    private val app: Application
+) : AndroidViewModel(app) {
+    private var _earthQuakes: LiveData<List<EarthQuake>>? = null
+    val earthQuakes: LiveData<List<EarthQuake>>
+        get() {
+            if (_earthQuakes == null) {
+                _earthQuakes =
+                    Database.getInstance(app.applicationContext).earthquakeDAO.getALlEarthquakes()
+            }
+
+            return _earthQuakes!!
+        }
 
     init {
         loadEarthQuakes(DOMParser())
@@ -36,8 +48,6 @@ class EarthQuakeListViewModel : ViewModel() {
         object : AsyncTask<Void, Void, List<EarthQuake>>() {
             override fun doInBackground(vararg params: Void?): List<EarthQuake> {
                 val earthQuakes = arrayListOf<EarthQuake>()
-
-                Log.i("TTTT", "started connecting")
                 try {
                     val quakeFeed = when (parser.streamType) {
                         StreamType.Json -> {
@@ -64,12 +74,14 @@ class EarthQuakeListViewModel : ViewModel() {
                     )
                 }
 
+                Database.getInstance(app.applicationContext)
+                    .earthquakeDAO
+                    .insertAll(earthQuakes)
+
                 return earthQuakes
             }
 
-            override fun onPostExecute(result: List<EarthQuake>?) {
-                _earthQuakes.value = result
-            }
+            override fun onPostExecute(result: List<EarthQuake>?) {}
         }.execute()
     }
 }

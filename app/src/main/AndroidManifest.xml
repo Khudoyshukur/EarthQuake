@@ -12,10 +12,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EarthQuakeApplication">
         <activity
+            android:name=".search_result.SearchResultsActivity"
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
+        <activity
             android:name=".preference.PreferenceActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -27,7 +39,14 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.default_searchable"
+                android:value=".SearchResultsActivity" />
         </activity>
+
+        <provider
+            android:name=".provider.EarthquakeSearchProvider"
+            android:authorities="com.example.earthquakeapplication.provider.earthquake" />
     </application>
 
 </manifest>

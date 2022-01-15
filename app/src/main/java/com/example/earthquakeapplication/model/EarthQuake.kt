@@ -1,6 +1,8 @@
 package com.example.earthquakeapplication.model
 
 import android.location.Location
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -11,7 +13,9 @@ import java.util.*
  * Email: Khudoyshukur.Juraev.001@mail.ru
  */
 
+@Entity
 data class EarthQuake(
+    @PrimaryKey
     val mId: String = "",
     val mDate: Date = Calendar.getInstance().time,
     val mDetails: String = "",
