@@ -8,6 +8,7 @@ import androidx.preference.PreferenceManager
 import com.example.earthquakeapplication.databinding.FragmentEarthquakeListBinding
 import com.example.earthquakeapplication.fragments.BaseFragment
 import com.example.earthquakeapplication.model.EarthQuake
+import com.example.earthquakeapplication.parser.DOMParser
 import com.example.earthquakeapplication.parser.XmlPullParser
 import com.example.earthquakeapplication.preference.PreferenceActivity
 
@@ -48,7 +49,7 @@ class EarthquakeListFragment :
         binding.list.adapter = listAdapter
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            viewModel.loadEarthQuakes(XmlPullParser())
+            viewModel.loadEarthQuakes(DOMParser())
         }
     }
 

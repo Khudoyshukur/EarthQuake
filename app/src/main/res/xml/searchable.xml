@@ -3,6 +3,6 @@
     android:hint="@string/search_hint"
     android:label="@string/search_label"
 
-    android:searchSuggestIntentData="content://com.example.earthquakeapplication.provider.earthquake"
+    android:searchSuggestAuthority="com.example.earthquakeapplication.provider.earthquake"
     android:searchSuggestIntentAction="android.intent.action.VIEW"
-    android:searchSuggestAuthority="com.example.earthquakeapplication.provider.earthquake" />
+    android:searchSuggestIntentData="content://com.example.earthquakeapplication.provider.earthquake/earthquakes" />

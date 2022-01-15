@@ -87,7 +87,7 @@ class EarthquakeSearchProvider : ContentProvider() {
     }
 
     companion object {
-        const val AUTHORITY = "com.example.earthquakeapplication.provider.earthquake/"
+        const val AUTHORITY = "com.example.earthquakeapplication.provider.earthquake"
         val CONTENT_URI = Uri.parse("content://$AUTHORITY")
 
         private const val SEARCH_SUGGESTIONS = 1
