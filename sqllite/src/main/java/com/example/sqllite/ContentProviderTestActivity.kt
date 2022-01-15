@@ -42,14 +42,13 @@ class ContentProviderTestActivity : AppCompatActivity() {
 
     private inner class MyContentSearchLoader : LoaderManager.LoaderCallbacks<Cursor> {
         override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
-            val extraName = intent?.getStringExtra(EXTRA_NAME)
+            val extraName = intent?.getStringExtra(SearchManager.QUERY)
             if (!extraName.isNullOrBlank()) {
-                val selection = "${HoardContract.KEY_GOLD_HOARD_NAME_COLUMN}=?"
-                val selectionArgs = arrayOf(extraName)
+                val selection = "${HoardContract.KEY_GOLD_HOARD_NAME_COLUMN} like \"%$extraName%\""
 
                 return CursorLoader(
                     this@ContentProviderTestActivity, MyHoardContentProvider.CONTENT_URI,
-                    null, selection, selectionArgs, null
+                    null, selection, null, null
                 )
             }
 
