@@ -1,5 +1,6 @@
 package com.example.sqllite.provider
 
+import android.app.SearchManager
 import android.content.ContentProvider
 import android.content.ContentUris
 import android.content.ContentValues
@@ -26,6 +27,16 @@ class MyHoardContentProvider : ContentProvider() {
     private var helper: HoardDbOpenHelper? = null
     private val uriMatcher = UriMatcher(UriMatcher.NO_MATCH)
 
+    private val searchSuggestProjectionMap = HashMap<String, String>()
+
+    init {
+        searchSuggestProjectionMap["_id"] = "${HoardContract.KEY_ID} as _id"
+        searchSuggestProjectionMap[SearchManager.SUGGEST_COLUMN_TEXT_1] =
+            "${HoardContract.KEY_GOLD_HOARD_NAME_COLUMN} as ${SearchManager.SUGGEST_COLUMN_TEXT_1}"
+        searchSuggestProjectionMap[SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID] =
+            "${HoardContract.KEY_ID} as ${SearchManager.SUGGEST_COLUMN_INTENT_DATA_ID}"
+    }
+
     override fun onCreate(): Boolean {
         helper = HoardDbOpenHelper(
             context!!,
@@ -35,6 +46,11 @@ class MyHoardContentProvider : ContentProvider() {
         )
         uriMatcher.addURI(CONTENT_AUTHORITY, "lairs", ALL_ROWS)
         uriMatcher.addURI(CONTENT_AUTHORITY, "lairs/#", SINGLE_ROW)
+
+        uriMatcher.addURI(CONTENT_AUTHORITY, SearchManager.SUGGEST_URI_PATH_QUERY, SEARCH)
+        uriMatcher.addURI(CONTENT_AUTHORITY, "${SearchManager.SUGGEST_URI_PATH_QUERY}/*", SEARCH)
+        uriMatcher.addURI(CONTENT_AUTHORITY, SearchManager.SUGGEST_URI_PATH_SHORTCUT, SEARCH)
+        uriMatcher.addURI(CONTENT_AUTHORITY, "${SearchManager.SUGGEST_URI_PATH_SHORTCUT}/*", SEARCH)
 
         return true
     }
@@ -73,6 +89,13 @@ class MyHoardContentProvider : ContentProvider() {
                 val rowId = uri.lastPathSegment
                 queryBuilder.appendWhere("${HoardContract.KEY_ID}=$rowId")
             }
+            SEARCH -> {
+                val query = uri.lastPathSegment
+                queryBuilder.appendWhere(
+                    "${HoardContract.KEY_GOLD_HOARD_NAME_COLUMN} like '%$query%'"
+                )
+                queryBuilder.projectionMap = searchSuggestProjectionMap
+            }
         }
 
         queryBuilder.tables = HoardDbOpenHelper.TABLE_NAME
@@ -97,6 +120,7 @@ class MyHoardContentProvider : ContentProvider() {
     override fun getType(uri: Uri): String = when (uriMatcher.match(uri)) {
         SINGLE_ROW -> "vnd.android.cursor.item/vmd.example.lairs"
         ALL_ROWS -> "vnd.android.cursor.dir/vmd.example.lairs"
+        SEARCH -> SearchManager.SUGGEST_MIME_TYPE
         else -> throw IllegalArgumentException("UNSUPPORTED URI: $uri")
     }
 
@@ -160,10 +184,11 @@ class MyHoardContentProvider : ContentProvider() {
     }
 
     companion object {
-        const val CONTENT_AUTHORITY = "content://com.example.sqllite.provider.hoarder"
-        val CONTENT_URI = Uri.parse(CONTENT_AUTHORITY)
+        const val CONTENT_AUTHORITY = "com.example.sqllite.provider.hoarder"
+        val CONTENT_URI = Uri.parse("content://$CONTENT_AUTHORITY")
 
         private const val ALL_ROWS = 1
         private const val SINGLE_ROW = 2
+        private const val SEARCH = 3
     }
 }

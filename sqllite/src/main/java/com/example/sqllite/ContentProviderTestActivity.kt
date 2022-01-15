@@ -3,6 +3,7 @@ package com.example.sqllite
 import android.app.SearchManager
 import android.content.Intent
 import android.database.Cursor
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
@@ -42,9 +43,19 @@ class ContentProviderTestActivity : AppCompatActivity() {
 
     private inner class MyContentSearchLoader : LoaderManager.LoaderCallbacks<Cursor> {
         override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
+
+            if (intent.action == Intent.ACTION_VIEW) {
+                val selection = "${HoardContract.KEY_ID}=?"
+                val selectionArgs = arrayOf(intent.data?.lastPathSegment)
+                return CursorLoader(
+                    this@ContentProviderTestActivity, MyHoardContentProvider.CONTENT_URI,
+                    null, selection, selectionArgs, null
+                )
+            }
+
             val extraName = intent?.getStringExtra(SearchManager.QUERY)
             if (!extraName.isNullOrBlank()) {
-                val selection = "${HoardContract.KEY_GOLD_HOARD_NAME_COLUMN} like \"%$extraName%\""
+                val selection = "${HoardContract.KEY_GOLD_HOARD_NAME_COLUMN} like \'%$extraName%\'"
 
                 return CursorLoader(
                     this@ContentProviderTestActivity, MyHoardContentProvider.CONTENT_URI,
@@ -89,6 +100,5 @@ class ContentProviderTestActivity : AppCompatActivity() {
 
     companion object {
         private const val LOADER_ID = 123
-        private const val EXTRA_NAME = "extra_name"
     }
 }
