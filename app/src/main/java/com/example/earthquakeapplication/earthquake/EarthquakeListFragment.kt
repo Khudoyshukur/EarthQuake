@@ -49,7 +49,7 @@ class EarthquakeListFragment :
         binding.list.adapter = listAdapter
 
         binding.swipeRefreshLayout.setOnRefreshListener {
-            viewModel.loadEarthQuakes(DOMParser())
+            viewModel.loadEarthQuakes()
         }
     }
 

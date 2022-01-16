@@ -5,10 +5,13 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.HandlerThread
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.work.ExistingWorkPolicy
+import androidx.work.WorkManager
 import com.example.earthquakeapplication.databinding.ActivityMainBinding
 import com.example.earthquakeapplication.earthquake.EarthquakeListFragment
 import com.example.earthquakeapplication.preference.PreferenceActivity
@@ -23,7 +26,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
 
         if (savedInstanceState == null) {
             listFragment = EarthquakeListFragment()
@@ -64,5 +66,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG_LIST_FRAGMENT = "tag_list_fragment"
+
+        const val BACKGROUND_UPLOAD_JOB_ID = 123
     }
 }

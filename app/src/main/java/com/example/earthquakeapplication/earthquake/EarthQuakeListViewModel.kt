@@ -14,6 +14,7 @@ import com.example.earthquakeapplication.model.EarthQuake
 import com.example.earthquakeapplication.parser.DOMParser
 import com.example.earthquakeapplication.parser.EarthquakeParser
 import com.example.earthquakeapplication.parser.StreamType
+import com.example.earthquakeapplication.service.EarthquakeUpdateJobService
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -39,49 +40,10 @@ class EarthQuakeListViewModel(
         }
 
     init {
-        loadEarthQuakes(DOMParser())
+        loadEarthQuakes()
     }
 
-    @SuppressLint("StaticFieldLeak")
-    @Suppress("Deprecation")
-    fun loadEarthQuakes(parser: EarthquakeParser) {
-        object : AsyncTask<Void, Void, List<EarthQuake>>() {
-            override fun doInBackground(vararg params: Void?): List<EarthQuake> {
-                val earthQuakes = arrayListOf<EarthQuake>()
-                try {
-                    val quakeFeed = when (parser.streamType) {
-                        StreamType.Json -> {
-                            // JSON
-                            "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
-                        }
-                        StreamType.Xml -> {
-                            // XML
-                            "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.atom"
-                        }
-                    }
-                    val url = URL(quakeFeed)
-
-                    val connection = url.openConnection() as HttpURLConnection
-                    when (connection.responseCode) {
-                        HttpURLConnection.HTTP_OK -> {
-                            earthQuakes.addAll(parser.parse(connection.inputStream))
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.i(
-                        "EarthQuakeListViewModel",
-                        "An error occurred while loading earthquake list $e"
-                    )
-                }
-
-                Database.getInstance(app.applicationContext)
-                    .earthquakeDAO
-                    .insertAll(earthQuakes)
-
-                return earthQuakes
-            }
-
-            override fun onPostExecute(result: List<EarthQuake>?) {}
-        }.execute()
+    fun loadEarthQuakes() {
+        EarthquakeUpdateJobService.scheduleUpdateJob(app.applicationContext)
     }
 }
