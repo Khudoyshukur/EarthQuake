@@ -2,14 +2,13 @@ package com.example.earthquakeapplication.earthquake
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import com.example.earthquakeapplication.databinding.FragmentEarthquakeListBinding
 import com.example.earthquakeapplication.fragments.BaseFragment
 import com.example.earthquakeapplication.model.EarthQuake
-import com.example.earthquakeapplication.parser.DOMParser
-import com.example.earthquakeapplication.parser.XmlPullParser
 import com.example.earthquakeapplication.preference.PreferenceActivity
 
 /**
@@ -38,7 +37,8 @@ class EarthquakeListFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel = ViewModelProviders.of(this)[EarthQuakeListViewModel::class.java]
+        val factory = EarthQuakeViewModelFactory(requireActivity().application)
+        viewModel = ViewModelProviders.of(this, factory)[EarthQuakeListViewModel::class.java]
 
         initUI()
         subscribeToLiveData()
@@ -55,6 +55,7 @@ class EarthquakeListFragment :
 
     private fun subscribeToLiveData() {
         viewModel.earthQuakes.observe(viewLifecycleOwner) {
+            Log.i("TTTT", "$it")
             setEarthquakes(it)
         }
     }

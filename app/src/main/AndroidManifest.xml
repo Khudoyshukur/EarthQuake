@@ -3,6 +3,8 @@
     package="com.example.earthquakeapplication">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -46,15 +48,8 @@
 
         <provider
             android:name=".provider.EarthquakeSearchProvider"
-            android:authorities="com.example.earthquakeapplication.provider.earthquake" />
-
-        <service
-            android:name=".service.EarthquakeUpdateJobService"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE" />
-            </intent-filter>
-        </service>
+            android:authorities="com.example.earthquakeapplication.provider.earthquake"
+            />
     </application>
 
 </manifest>
