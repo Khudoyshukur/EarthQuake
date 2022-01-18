@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.example.earthquakeapplication.database.Database
 import com.example.earthquakeapplication.model.EarthQuake
-import com.example.earthquakeapplication.service.EarthquakeUpdateWorker
+import com.example.earthquakeapplication.worker.EarthquakeUpdateWorker
 
 /**
  * Created by: androdev

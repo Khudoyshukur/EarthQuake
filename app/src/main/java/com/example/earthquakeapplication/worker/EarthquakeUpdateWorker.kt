@@ -1,7 +1,10 @@
-package com.example.earthquakeapplication.service
+package com.example.earthquakeapplication.worker
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
-import android.util.Log
+import android.os.Build
+import androidx.core.app.NotificationCompat
 import androidx.preference.PreferenceManager
 import androidx.work.*
 import com.example.earthquakeapplication.database.Database
@@ -9,6 +12,7 @@ import com.example.earthquakeapplication.model.EarthQuake
 import com.example.earthquakeapplication.parser.DOMParser
 import com.example.earthquakeapplication.parser.StreamType
 import com.example.earthquakeapplication.preference.PreferenceActivity
+import kotlinx.coroutines.delay
 import org.xml.sax.SAXException
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -28,19 +32,35 @@ class EarthquakeUpdateWorker(context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
+        try {
+            showNotification()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        val outputData = Data.Builder()
+
         return try {
+            delay(5000)
             updateEarthquakeList()
 
             scheduleNextUpdate(tags)
-            Result.Success(Data.EMPTY)
+
+            outputData.put("Result", "Success")
+            Result.Success(outputData.build())
         } catch (e: MalformedURLException) {
+            outputData.put("Result", "$e")
             Result.failure()
         } catch (e: IOException) {
+            outputData.put("Result", "$e")
             Result.retry()
         } catch (e: ParserConfigurationException) {
+            outputData.put("Result", "$e")
             Result.failure()
         } catch (e: SAXException) {
+            outputData.put("Result", "$e")
             Result.failure()
+        } finally {
+            hideNotification()
         }
     }
 
@@ -71,7 +91,7 @@ class EarthquakeUpdateWorker(context: Context, workerParams: WorkerParameters) :
             .insertAll(earthQuakes)
     }
 
-    private suspend fun scheduleNextUpdate(tags: MutableSet<String>) {
+    private fun scheduleNextUpdate(tags: MutableSet<String>) {
         if (tags.contains(UPDATE_JOB_TAG)) {
             val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
             val updateFreq =
@@ -80,26 +100,61 @@ class EarthquakeUpdateWorker(context: Context, workerParams: WorkerParameters) :
                 preferences.getBoolean(PreferenceActivity.PREF_AUTO_UPDATE, false)
 
             if (autoUpdateChecked) {
-                WorkManager.getInstance(applicationContext)
-                    .cancelAllWorkByTag(PERIODIC_JOB_TAG)
-                    .await()
-
                 val constraints = Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build()
 
-                Log.i("TTTT", "update frequency $updateFreq")
                 val request =
                     PeriodicWorkRequestBuilder<EarthquakeUpdateWorker>(updateFreq, TimeUnit.MINUTES)
                         .setConstraints(constraints)
+                        .setInitialDelay(updateFreq, TimeUnit.MINUTES)
                         .addTag(PERIODIC_JOB_TAG)
                         .build()
 
                 PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS
                 WorkManager.getInstance(applicationContext)
-                    .enqueue(request)
+                    .enqueueUniquePeriodicWork(
+                        PERIODIC_JOB_TAG, ExistingPeriodicWorkPolicy.REPLACE, request
+                    )
             }
         }
+    }
+
+    private fun createNotificationChannel(notificationManager: NotificationManager) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                NOTIFICATION_CHANNEL_ID,
+                NOTIFICATION_CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_LOW
+            )
+
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun showNotification() {
+        val notificationManager =
+            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        createNotificationChannel(notificationManager)
+
+        val title = "Updating"
+        val description = "Updating earthquake list from server..."
+
+        val builder = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+        builder.setContentTitle(title)
+        builder.setContentText(description)
+        builder.priority = NotificationCompat.PRIORITY_HIGH
+        builder.setOngoing(true)
+        builder.setSmallIcon(android.R.drawable.ic_dialog_alert)
+
+        notificationManager.notify(NOTIFICATION_ID, builder.build())
+    }
+
+    private fun hideNotification() {
+        val notificationManager =
+            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        notificationManager.cancel(NOTIFICATION_ID)
     }
 
     companion object {
@@ -110,6 +165,7 @@ class EarthquakeUpdateWorker(context: Context, workerParams: WorkerParameters) :
             val request = OneTimeWorkRequestBuilder<EarthquakeUpdateWorker>()
                 .setConstraints(constraints)
                 .addTag(UPDATE_JOB_TAG)
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .build()
 
             WorkManager.getInstance(context).enqueue(request)
@@ -120,5 +176,9 @@ class EarthquakeUpdateWorker(context: Context, workerParams: WorkerParameters) :
             "com.example.earthquakeapplication.service.EarthquakeUpdateWorker.update_job"
         private const val PERIODIC_JOB_TAG =
             "com.example.earthquakeapplication.service.EarthquakeUpdateWorker.periodic_job"
+
+        private const val NOTIFICATION_CHANNEL_ID = "Workers"
+        private const val NOTIFICATION_CHANNEL_NAME = "Update worker"
+        private const val NOTIFICATION_ID = 123
     }
 }
