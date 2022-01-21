@@ -16,7 +16,7 @@ import java.util.concurrent.Executors
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val executorService: ExecutorService = Executors.
+    private val executorService: ExecutorService = Executors.newFixedThreadPool(4)
 
     private var myBoundService: MyBoundService? = null
 
