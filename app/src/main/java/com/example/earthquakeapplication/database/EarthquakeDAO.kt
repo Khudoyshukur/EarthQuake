@@ -36,6 +36,9 @@ interface EarthquakeDAO {
     @Query("select * from EarthQuake")
     fun getALlEarthquakes(): LiveData<List<EarthQuake>>
 
+    @Query("select * from EarthQuake")
+    fun getALlEarthquakesBlocking(): List<EarthQuake>
+
     @Query("select mId as _id, mDetails as ${SearchManager.SUGGEST_COLUMN_TEXT_1} from EarthQuake where mDetails like :query order by mDate DESC")
     fun generateSearchSuggestion(query: String): Cursor
 

@@ -2,11 +2,17 @@ package com.example.earthquakeapplication.worker
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.graphics.Color
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationCompat.VISIBILITY_PUBLIC
+import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import androidx.work.*
+import com.example.earthquakeapplication.MainActivity
 import com.example.earthquakeapplication.database.Database
 import com.example.earthquakeapplication.model.EarthQuake
 import com.example.earthquakeapplication.parser.DOMParser
@@ -20,6 +26,7 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.util.concurrent.TimeUnit
 import javax.xml.parsers.ParserConfigurationException
+import com.example.earthquakeapplication.R as Res
 
 /**
  * Created by: androdev
@@ -32,11 +39,6 @@ class EarthquakeUpdateWorker(context: Context, workerParams: WorkerParameters) :
     CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
-        try {
-            showNotification()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
         val outputData = Data.Builder()
 
         return try {
@@ -59,8 +61,6 @@ class EarthquakeUpdateWorker(context: Context, workerParams: WorkerParameters) :
         } catch (e: SAXException) {
             outputData.put("Result", "$e")
             Result.failure()
-        } finally {
-            hideNotification()
         }
     }
 
@@ -89,6 +89,9 @@ class EarthquakeUpdateWorker(context: Context, workerParams: WorkerParameters) :
         Database.getInstance(applicationContext)
             .earthquakeDAO
             .insertAll(earthQuakes)
+
+        //val earthQuake = findLargestEarthquake(earthQuakes)
+        showNotification(earthQuakes.firstOrNull() ?: return)
     }
 
     private fun scheduleNextUpdate(tags: MutableSet<String>) {
@@ -132,29 +135,61 @@ class EarthquakeUpdateWorker(context: Context, workerParams: WorkerParameters) :
         }
     }
 
-    private fun showNotification() {
+    private fun showNotification(earthQuake: EarthQuake) {
         val notificationManager =
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel(notificationManager)
 
-        val title = "Updating"
-        val description = "Updating earthquake list from server..."
+        val title = earthQuake.mId
+        val description = earthQuake.toString()
+
+        val startActivityIntent = Intent(applicationContext, MainActivity::class.java)
+        val launchIntent = PendingIntent.getActivity(
+            applicationContext,
+            0,
+            startActivityIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         val builder = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
         builder.setContentTitle(title)
         builder.setContentText(description)
         builder.priority = NotificationCompat.PRIORITY_HIGH
-        builder.setOngoing(true)
+        builder.setDefaults(NotificationCompat.DEFAULT_ALL)
         builder.setSmallIcon(android.R.drawable.ic_dialog_alert)
+        builder.setVisibility(VISIBILITY_PUBLIC)
+        builder.setShowWhen(true)
+        builder.setContentIntent(launchIntent)
+        builder.setWhen(earthQuake.mDate.time)
+        builder.setStyle(
+            NotificationCompat.BigTextStyle()
+                .bigText(earthQuake.mDetails)
+        )
+        builder.color = ContextCompat.getColor(
+            applicationContext,
+            Res.color.design_default_color_on_secondary
+        )
 
         notificationManager.notify(NOTIFICATION_ID, builder.build())
     }
 
-    private fun hideNotification() {
-        val notificationManager =
-            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private fun findLargestEarthquake(newEarthquakes: List<EarthQuake>): EarthQuake? {
+        val earthQuakes = Database.getInstance(applicationContext)
+            .earthquakeDAO.getALlEarthquakesBlocking()
 
-        notificationManager.cancel(NOTIFICATION_ID)
+        var largestEarthquake: EarthQuake? = null
+
+        for (earthquake in newEarthquakes) {
+            if (earthQuakes.contains(earthquake)) {
+                continue
+            }
+
+            if (largestEarthquake?.mMagnitude ?: -1.0 < earthquake.mMagnitude) {
+                largestEarthquake = earthquake
+            }
+        }
+
+        return largestEarthquake
     }
 
     companion object {
@@ -165,7 +200,7 @@ class EarthquakeUpdateWorker(context: Context, workerParams: WorkerParameters) :
             val request = OneTimeWorkRequestBuilder<EarthquakeUpdateWorker>()
                 .setConstraints(constraints)
                 .addTag(UPDATE_JOB_TAG)
-                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                //.setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .build()
 
             WorkManager.getInstance(context).enqueue(request)
