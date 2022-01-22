@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/customviews" />
+            <option value="$PROJECT_DIR$/datastore" />
             <option value="$PROJECT_DIR$/downloadmanager" />
             <option value="$PROJECT_DIR$/services" />
             <option value="$PROJECT_DIR$/sqllite" />
