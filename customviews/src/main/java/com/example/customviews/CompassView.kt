@@ -5,8 +5,11 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.accessibility.AccessibilityEvent
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 
 /**
@@ -19,7 +22,8 @@ import androidx.core.content.res.ResourcesCompat
 class CompassView : View {
 
     private lateinit var circlePaint: Paint
-    private lateinit var whitePaint: Paint
+    private lateinit var markerPaint: Paint
+    private lateinit var textPaint: Paint
 
     private lateinit var northText: String
     private lateinit var southText: String
@@ -29,6 +33,33 @@ class CompassView : View {
     private var textHeight: Float = 0f
 
     private var bearing: Float? = null
+
+    private var mPitch: Float = 0f
+    private var mRoll: Float = 0f
+
+    private lateinit var borderGradientColors: IntArray
+    private lateinit var borderGradientPositions: FloatArray
+    private lateinit var glassGradientColors: IntArray
+    private lateinit var glassGradientPositions: FloatArray
+
+    private var skyHorizonColorFrom: Int = 0
+    private var skyHorizonColorTo: Int = 0
+    private var groundHorizonColorFrom: Int = 0
+    private var groundHorizonColorTo: Int = 0
+
+    fun getPitch() = mPitch
+    fun setPitch(pitch: Float) {
+        mPitch = pitch
+
+        sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED)
+    }
+
+    fun getRoll() = mRoll
+    fun setRoll(roll: Float) {
+        mRoll = roll
+
+        sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED)
+    }
 
     fun setBearing(bearing: Float) {
         this.bearing = bearing
@@ -70,10 +101,25 @@ class CompassView : View {
         circlePaint.strokeWidth = 1f
         circlePaint.style = Paint.Style.FILL_AND_STROKE
 
-        whitePaint = Paint(Paint.ANTI_ALIAS_FLAG)
-        whitePaint.color = Color.WHITE
+        markerPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        markerPaint.color = Color.WHITE
+        markerPaint.alpha = 200
+        markerPaint.strokeWidth = 1f
+        markerPaint.style = Paint.Style.STROKE
+        markerPaint.setShadowLayer(
+            2f, 1f, 1f, ContextCompat.getColor(
+                context,
+                R.color.shadow_color
+            )
+        )
+
+        textPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        textPaint.color = Color.WHITE
         textHeight = 30f
-        whitePaint.textSize = textHeight
+        textPaint.textSize = textHeight
+        textPaint.isFakeBoldText = true
+        textPaint.isSubpixelText = true
+        textPaint.textAlign = Paint.Align.LEFT
 
         northText = context.getString(R.string.north)
         southText = context.getString(R.string.south)
@@ -92,6 +138,24 @@ class CompassView : View {
                 bearing = typedArray.getFloat(R.styleable.CompassView_bearing, 0f)
             }
         }
+
+        borderGradientColors = IntArray(4)
+        borderGradientPositions = FloatArray(4)
+        borderGradientColors[3] = ContextCompat.getColor(context, R.color.outer_border)
+        borderGradientColors[2] = ContextCompat.getColor(context, R.color.inner_border_one)
+        borderGradientColors[1] = ContextCompat.getColor(context, R.color.inner_border_two)
+        borderGradientColors[0] = ContextCompat.getColor(context, R.color.inner_border)
+        borderGradientPositions[3] = 0.0f
+        borderGradientPositions[2] = 1 - 0.03f
+        borderGradientPositions[1] = 1 - 0.06f
+        borderGradientPositions[0] = 1.0f
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+
+        Log.i("TTTT", event?.pressure.toString())
+
+        return true
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -107,7 +171,7 @@ class CompassView : View {
         canvas.save()
 
         for (i in 0 until 24) {
-            canvas.drawLine(px, 0f, px, 10f, whitePaint)
+            canvas.drawLine(px, 0f, px, 10f, markerPaint)
             canvas.save()
             canvas.translate(0f, textHeight)
 
@@ -120,14 +184,14 @@ class CompassView : View {
                             2 * textHeight,
                             px - 5,
                             3 * textHeight,
-                            whitePaint
+                            markerPaint
                         )
                         canvas.drawLine(
                             px,
                             2 * textHeight,
                             px + 5,
                             3 * textHeight,
-                            whitePaint
+                            markerPaint
                         )
                         dirString = northText
                     }
@@ -142,15 +206,15 @@ class CompassView : View {
                     }
                 }
 
-                val textWidth = whitePaint.measureText(dirString)
-                canvas.drawText(dirString, px - textWidth / 2f, textHeight, whitePaint)
+                val textWidth = markerPaint.measureText(dirString)
+                canvas.drawText(dirString, px - textWidth / 2f, textHeight, textPaint)
             } else if (i % 3 == 0) {
                 val angle = (i * 15).toString()
-                val angleTextWidth = whitePaint.measureText(angle)
+                val angleTextWidth = markerPaint.measureText(angle)
 
                 val angleTextX = px - angleTextWidth / 2
                 val angleTextY = py - radius + textHeight
-                canvas.drawText(angle, angleTextX, angleTextY, whitePaint)
+                canvas.drawText(angle, angleTextX, angleTextY, textPaint)
             }
             canvas.restore()
 
