@@ -1,9 +1,13 @@
 package com.example.earthquakeapplication.earthquake
 
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
 import com.example.earthquakeapplication.databinding.FragmentEarthquakeListBinding
@@ -26,12 +30,20 @@ class EarthquakeListFragment :
     private var listAdapter: EarthQuakeListAdapter? = null
     private lateinit var viewModel: EarthQuakeListViewModel
 
+    private var fullScreen = false
+
     private var minMagnitude = 0
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
         prefs.registerOnSharedPreferenceChangeListener(this)
+
+        if(resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            enableFullscreen()
+        } else {
+            disableFullscreen()
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -42,6 +54,33 @@ class EarthquakeListFragment :
 
         initUI()
         subscribeToLiveData()
+
+        binding.changeFullscreen.setOnClickListener {
+            if (fullScreen) {
+                disableFullscreen()
+            } else {
+                enableFullscreen()
+            }
+
+            fullScreen = !fullScreen
+        }
+    }
+
+    private fun enableFullscreen() {
+        WindowCompat.setDecorFitsSystemWindows(requireActivity().window, false)
+        WindowInsetsControllerCompat(requireActivity().window, binding.root).let {
+            it.hide(WindowInsetsCompat.Type.systemBars())
+            it.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
+    private fun disableFullscreen() {
+        WindowCompat.setDecorFitsSystemWindows(requireActivity().window, true)
+        WindowInsetsControllerCompat(
+            requireActivity().window,
+            binding.root
+        ).show(WindowInsetsCompat.Type.systemBars())
     }
 
     private fun initUI() {

@@ -15,6 +15,7 @@
         android:theme="@style/Theme.EarthQuakeApplication">
         <activity
             android:name=".search_result.SearchResultsActivity"
+            android:parentActivityName=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop">
             <intent-filter>
@@ -23,18 +24,27 @@
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
         </activity>
         <activity
             android:name=".preference.PreferenceActivity"
+            android:parentActivityName=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity"/>
         </activity>
         <activity
             android:name=".MainActivity"
+            android:theme="@style/Theme.EarthQuakeApplication"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

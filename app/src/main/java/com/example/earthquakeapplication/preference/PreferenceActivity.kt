@@ -14,6 +14,8 @@ class PreferenceActivity : AppCompatActivity() {
         binding = ActivityPreferenceBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         if (savedInstanceState == null)
             supportFragmentManager.beginTransaction()
                 .add(R.id.fragment_container, PreferenceFragment::class.java, null)

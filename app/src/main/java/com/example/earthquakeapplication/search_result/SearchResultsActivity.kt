@@ -47,6 +47,8 @@ class SearchResultsActivity : AppCompatActivity() {
         binding = ActivitySearchResultsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+
         initUI()
     }
 
