@@ -4,14 +4,15 @@ import android.app.SearchManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.Bundle
-import android.os.HandlerThread
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.work.ExistingWorkPolicy
-import androidx.work.WorkManager
 import com.example.earthquakeapplication.databinding.ActivityMainBinding
 import com.example.earthquakeapplication.earthquake.EarthquakeListFragment
 import com.example.earthquakeapplication.preference.PreferenceActivity
@@ -62,6 +63,28 @@ class MainActivity : AppCompatActivity() {
             }
             else -> false
         }
+    }
+
+    @Suppress("unused")
+    private fun sensorManagerTest() {
+        val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE)
+
+        val eventListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                TODO("Not yet implemented")
+            }
+        }
+        sensorManager.registerListener(
+            eventListener,
+            sensor,
+            SensorManager.SENSOR_DELAY_NORMAL,
+            10_000_000
+        )
     }
 
     companion object {
